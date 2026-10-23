@@ -4,17 +4,23 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from langchain_ollama import ChatOllama
+from langchain_core.prompts  import ChatPromptTemplate
 
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
 app = FastAPI(title="AI Text Summarizer Interview")
 
+
 # TODO 0:
 # Initialize the Ollama language model using llama3.2:3b
 # and configure the temperature .
 
-llm = None
+llm = ChatOllama (
+    model="llama3.2:3b",
+    temperature=0
+
+)
 
 
 class SummaryRequest(BaseModel):
@@ -32,11 +38,14 @@ def summarize(data: SummaryRequest):
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
     # TODO 1: Create a prompt asking the AI to summarize data.text
-    prompt = None
+    prompt =f" you are assistant ai summarize dat text 1-2sentences: {data.text}"
+    
 
     # TODO 2: Send the prompt to Ollama 
     # Extract the generated text from the response.
-    summary = None
+    response=llm.invoke(prompt)
+    summary = response.content
+    
 
     if summary is None:
         raise HTTPException(
@@ -45,7 +54,10 @@ def summarize(data: SummaryRequest):
         )
 
     # TODO 3: Return the summary as JSON
-    return None
+    
+    return {
+        "summary":summary
+        }
 
 
 # Keep the frontend mount after the API routes.
